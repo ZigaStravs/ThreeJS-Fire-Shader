@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Third Attempt at a Fire Shader</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<script id="vertexShader" type="x-shader/x-vertex">
+			precision mediump float;
+			precision mediump int;
+			attribute vec4 color;
+	
+			uniform float blend;
+			uniform sampler2D gradient;
+			uniform sampler2D blendPattern;
+	
+      varying vec2 vUv;
+      varying float vFade;
+			varying float dissolve;
+			void main()	{
+        vUv = uv;
+				dissolve = texture2D(blendPattern, vUv).r * 0.1;
+        vec4 localPosition = vec4( position*(1.+(dissolve*5.)), 1);
+				
+        vFade = clamp((localPosition.y + 3.0) / 6.0, 0.0, 1.0);
+				gl_Position = projectionMatrix * modelViewMatrix * localPosition;
+			}
+</script>
+<script id="fragmentShader" type="x-shader/x-vertex">
+
+			precision mediump float;
+			precision mediump int;
+	
+			uniform float time;
+			uniform float blend;
+	
+			uniform sampler2D gradient;
+			uniform sampler2D blendPattern;
+	
+      varying float vFade;
+      varying vec2 vUv;
+  		varying float dissolve;
+  
+			void main()	{
+        
+        float spread = 0.2;
+        
+        float fadeAmount = smoothstep(
+          max(0., vFade - spread),
+          min(1., vFade + spread),
+          blend + dissolve*1.2
+	      );
+				
+				gl_FragColor = texture2D(gradient, vec2(vUv.x, fadeAmount));
+			}
+</script>
+<!-- partial -->
+  <script src='https://cdnjs.cloudflare.com/ajax/libs/three.js/95/three.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
